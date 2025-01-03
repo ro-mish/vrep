@@ -5,17 +5,16 @@
 vrep is a tool for visualizing codebase repositories. It provides a graphical representation of the repository's structure, making it easier to understand the relationships between different project parts.
 
 ## Getting started
-First clone the repo.
+3 steps for easy setup.
 
+First clone the repo.
 ```
 git clone https://github.com/ro-mish/vrep.git
 ```
-
 Next, change into the vrep repo.
 ```
 cd vrep
 ```
-
 To install vrep, you can use make install:
 ```
 make install
@@ -24,7 +23,11 @@ This will install vrep and its dependencies.
 
 ## Usage
 
-To use vrep, navigate to the root directory of the Git repository you want to visualize and run the following command:
+To use vrep cli, you can use:
+```
+vrep path/to/your/repo
+```
+If you want to use it for your current repo, navigate to the root directory of the Git repository you want to visualize and run the following command:
 ```
 vrep .
 ```
