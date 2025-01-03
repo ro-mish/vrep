@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 import os
 import sys
-import argparse
 import webbrowser
 import tempfile
 import atexit
 from pathlib import Path
-from .interactive_graph import InteractiveRepoGraph
-from .utils.gitignore_parser import GitignoreParser
 
-class RepoVisualizer:
-    def __init__(self):
+from .config.config_manager import ConfigManager
+from .graph_builder import RepoGraphBuilder
+from .interactive_graph import InteractiveRepoGraph
+
+class Orchestrator:
+    def __init__(self, repo_path: str = ".", config_path: str = None):
+        """
+        Initialize the visualization orchestrator.
+        
+        Args:
+            repo_path (str): Path to the repository to analyze
+            config_path (str, optional): Path to custom configuration file
+        """
+        self.repo_path = Path(repo_path)
+        self.config_manager = ConfigManager(config_path)
         self.temp_file = None
         self.setup_temp_file()
         atexit.register(self.cleanup)
@@ -21,7 +31,7 @@ class RepoVisualizer:
             delete=False,
             suffix='.html',
             prefix='repo_viz_',
-            dir=tempfile.gettempdir()  # Explicitly use system temp directory
+            dir=tempfile.gettempdir()
         )
         self.temp_file = temp.name
         temp.close()
@@ -35,35 +45,37 @@ class RepoVisualizer:
             except Exception as e:
                 print(f"\nError cleaning up visualization file: {e}")
 
-    def visualize_repo(self, repo_path: str):
-        """Generate and display the repository visualization"""
+    def run(self) -> int:
+        """
+        Execute the visualization process end-to-end.
+        
+        Returns:
+            int: Exit code (0 for success, 1 for failure)
+        """
         try:
-            # Convert relative path to absolute path
-            repo_path = os.path.abspath(repo_path)
-            
             # Validate repository path
-            if not os.path.exists(repo_path):
-                print(f"Error: Repository path does not exist: {repo_path}")
+            if not self.repo_path.exists():
+                print(f"Error: Repository path does not exist: {self.repo_path}")
                 return 1
             
-            if not os.path.isdir(repo_path):
-                print(f"Error: Path is not a directory: {repo_path}")
+            if not self.repo_path.is_dir():
+                print(f"Error: Path is not a directory: {self.repo_path}")
                 return 1
 
-            # Check for .gitignore
-            gitignore_path = os.path.join(repo_path, '.gitignore')
-            if os.path.exists(gitignore_path):
-                print(f"Found .gitignore file at {gitignore_path}")
-            else:
-                print("No .gitignore file found, all files will be included")
-
-            print(f"Analyzing repository: {repo_path}")
+            print(f"Analyzing repository: {self.repo_path}")
+            
+            # Load configuration
+            config = self.config_manager.get_config()
+            
+            # Build dependency graph
+            print("Building dependency graph...")
+            graph_builder = RepoGraphBuilder(self.repo_path, config)
+            graph = graph_builder.build_graph()
             
             # Generate visualization
-            interactive_graph = InteractiveRepoGraph(repo_path)
+            print("Generating visualization...")
+            interactive_graph = InteractiveRepoGraph(graph)
             interactive_graph.build_interactive_graph()
-            
-            # Save to temporary file
             interactive_graph.save_graph(self.temp_file)
             
             # Open in browser
@@ -82,25 +94,27 @@ class RepoVisualizer:
             print(f"\nError: {str(e)}")
             return 1
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Visualize Python repository dependencies interactively.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+def main():
+    """Command-line entry point"""
+    import argparse
     
+    parser = argparse.ArgumentParser(
+        description='Visualize Python repository dependencies interactively.'
+    )
     parser.add_argument(
         'repo_path',
         nargs='?',
         default='.',
         help='Path to the repository to analyze (defaults to current directory)'
     )
+    parser.add_argument(
+        '--config',
+        help='Path to custom configuration file'
+    )
     
-    return parser.parse_args()
-
-def main():
-    args = parse_args()
-    visualizer = RepoVisualizer()
-    return visualizer.visualize_repo(args.repo_path)
+    args = parser.parse_args()
+    orchestrator = Orchestrator(args.repo_path, args.config)
+    return orchestrator.run()
 
 if __name__ == "__main__":
     sys.exit(main()) 
