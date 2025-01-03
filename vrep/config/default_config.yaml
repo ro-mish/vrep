@@ -1,0 +1,51 @@
+visualization:
+  network:
+    height: "750px"
+    width: "1000px"
+    bgcolor: "#ffffff"
+    font_color: "black"
+    select_menu: true
+    filter_menu: false
+
+  nodes:
+    file_color: "#97C2FC"  # Light blue for Python files
+    import_color: "#FFA07A"  # Light salmon for external imports
+    size: 20
+    font_size: 12
+    scaling:
+      min: 10
+      max: 30
+
+  edges:
+    color: "#666666"
+    opacity: 0.8
+
+  physics:
+    solver: "barnesHut"
+    barnes_hut:
+      gravitational_constant: -2000
+      central_gravity: 0.3
+      spring_length: 95
+      spring_constant: 0.04
+      damping: 0.09
+      avoid_overlap: 0.1
+    stabilization:
+      enabled: true
+      iterations: 100
+      update_interval: 50
+      fit: true
+
+  interaction:
+    hover: true
+    navigation_buttons: true
+    keyboard: true
+    drag_nodes: true
+    drag_view: true
+    zoom_view: true
+    hide_edges_on_drag: true
+    hide_nodes_on_drag: false
+
+  layout:
+    improved_layout: true
+    hierarchical:
+      enabled: false 

@@ -169,3 +169,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Temporary visualization files
+repo_viz_*.html
+*_visualization.html
+
+# Cache directories
+.vrep_cache/
+
+# Configuration files
+vrep/config/local_config.yaml
+vrep/config/*.local.yaml
